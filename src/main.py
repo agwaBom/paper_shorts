@@ -4,6 +4,7 @@ import keyboard
 import argparse
 from tqdm import tqdm
 import os
+import time
 
 def print_sentence(idx, flat_sentences):
     os.system('clear')
@@ -19,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--resume_file", type=str, default="input/resume/2305.14824.json", help="The file to save the current state of the document.")
     parser.add_argument("--resume", type=bool, default=False, help="Resume from where you left off.")
     parser.add_argument("--save", type=bool, default=False, help="Save the current state of the document.")
+    parser.add_argument("--state_save_path", type=str, default="input/resume/2305.14824.json")
     args = parser.parse_args()
 
     elements = partition(args.file)
@@ -35,23 +37,32 @@ if __name__ == "__main__":
         for sent in sentences:
             flat_sentences.append(sent)
 
+    print("Start pressing!\nA: backward\nD: forward")
     idx = 0
     while True:
         try:
             if keyboard.is_pressed("a"):
-                assert idx < 0, "You are at the beginning of the document."
+                assert idx > 0, "You are at the beginning of the document."
                 idx -= 1
                 print_sentence(idx, flat_sentences)
+                time.sleep(0.2)
 
             elif keyboard.is_pressed("d"):
                 idx += 1
                 print_sentence(idx, flat_sentences)
+                time.sleep(0.2)
 
             if idx == len(flat_sentences):
                 print("You have reached the end of the document.")
                 quit()
         except KeyboardInterrupt:
             # we save the current state of the document
+            cur_state = {
+                "file_path":args.file,
+                "total_page":len(flat_sentences),
+                "current_page": idx,
+                "state_save_path":args.state_save_path
+            }
             quit()
             # we can resume from where we left off
     
